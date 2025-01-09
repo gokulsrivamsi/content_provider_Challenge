@@ -1,5 +1,6 @@
 package com.vr.stringgeneratorcp
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
@@ -9,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,10 +27,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +47,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
@@ -69,33 +75,58 @@ class MainActivity : ComponentActivity() {
         viewModel = ViewModelProvider(this, myViewModelFactory).get(MainViewModel::class.java)
         setContent {
             StringGeneratorCpTheme {
-                MainScreen()
+                ScaffoldWithTopBar()
             }
         }
 
     }
 
+
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun MainScreen() {
+    fun ScaffoldWithTopBar() {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.primary,
+                    ),
+                    title = {
+                        Text("String Generator")
+                    }
+                )
+            },
+        ) { innerPadding ->
+            MainScreen(innerPadding)
+        }
+    }
+
+    @Composable
+    fun MainScreen(innerPadding: PaddingValues) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp, 50.dp, 16.dp),
+                .padding(innerPadding)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             InputFieldWithButton()
-            loadList()
+            LoadList()
         }
 
     }
 
     @Composable
-    fun loadList() {
+    fun LoadList() {
         var stringsList by remember {
             mutableStateOf(listOf<RandomTextData>())
         }
         viewModel.getGeneratedString().observe(this) {
             stringsList = it
+            if (it.isNotEmpty()) {
+                viewModel.deleteDuplicateRecords()
+            }
         }
         Column(
             modifier = Modifier
@@ -172,14 +203,14 @@ class MainActivity : ComponentActivity() {
             horizontalArrangement = Arrangement.Center
         ) {
             Button(
-                onClick = Utils.singleClick {
+                onClick = {
                     focusManager.clearFocus()
                     validateInput(mContext, mText)
                 },
             ) { Text("Generate String") }
             Spacer(modifier = Modifier.width(20.dp))
             Button(
-                onClick = Utils.singleClick {
+                onClick = {
                     focusManager.clearFocus()
                     viewModel.deletAll()
                 },
@@ -202,6 +233,7 @@ class MainActivity : ComponentActivity() {
             })
         }
     }
+
 
 }
 

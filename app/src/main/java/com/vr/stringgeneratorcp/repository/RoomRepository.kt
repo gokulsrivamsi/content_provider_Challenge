@@ -18,6 +18,10 @@ class RoomRepository(private val db: StringsDataBase) {
         return db.RoomDao().getAllStringData()
     }
 
+    fun deleteDuplicateRecords(){
+        db.RoomDao().deleteDuplicateRecords()
+    }
+
     fun deleteAll() {
         db.RoomDao().deleteAll()
     }

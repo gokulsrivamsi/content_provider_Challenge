@@ -42,7 +42,13 @@ class MainViewModel(
         }
     }
 
-    fun deletAll(){
+    fun deleteDuplicateRecords() {
+        viewModelScope.launch(Dispatchers.IO) {
+            dbRepository.deleteDuplicateRecords()
+        }
+    }
+
+    fun deletAll() {
         viewModelScope.launch(Dispatchers.IO) {
             dbRepository.deleteAll()
         }
